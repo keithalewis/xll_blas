@@ -42,6 +42,10 @@ AddIn xai_blas_vector_(
 		})
 	.Uncalced()
 	.FunctionHelp("Return a handle to a BLAS strided vector.")
+	.Documentation(R"(
+Return a handle to a <code>xll::blas<double></code> vector. The size of
+the array is multiplied by the increment.
+)")
 );
 HANDLEX WINAPI xll_blas_vector_(const _FPX* pv, LONG dn)
 {
