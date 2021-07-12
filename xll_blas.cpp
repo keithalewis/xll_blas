@@ -37,7 +37,7 @@ Auto<Open> xao_allocator_test([]() {
 AddIn xai_blas_vector_(
 	Function(XLL_HANDLEX, "xll_blas_vector_", "\\BLAS.VECTOR")
 	.Arguments({
-		Arg(XLL_FPX, "vector", "is a vector or the size of the vector."),
+		Arg(XLL_FPX, "vector", "is an array of numbers or the size of the vector."),
 		Arg(XLL_LONG, "_incr", "is the optional stride of the vector. Default is 1."),
 		})
 	.Uncalced()
@@ -88,6 +88,62 @@ _FPX* WINAPI xll_blas_vector(HANDLEX h)
 		const auto& v_ = h_.as<fpvector>();
 		
 		fpx = v_->alloc.fp.get();
+	}
+	catch (const std::exception& ex) {
+		XLL_ERROR(ex.what());
+	}
+
+	return fpx;
+}
+
+AddIn xai_blas_matrix_(
+	Function(XLL_HANDLEX, "xll_blas_matrix_", "\\BLAS.MATRIX")
+	.Arguments({
+		Arg(XLL_FPX, "matrix", "is an array of numbers."),
+		Arg(XLL_BOOL, "_trans", "is an optional boolean indicating the matrix is transposed. Default is FALSE."),
+		})
+		.Uncalced()
+	.FunctionHelp("Return a handle to a BLAS matrix.")
+	.Documentation(R"(
+Return a handle to a BLAS matrix.
+)")
+);
+HANDLEX WINAPI xll_blas_matrix_(const _FPX* pm, bool trans)
+{
+#pragma XLLEXPORT
+	HANDLEX h = INVALID_HANDLEX;
+
+	try {
+		handle<blas::matrix<double>> h_(new 
+			fpmatrix(pm->rows, pm->columns, &pm->array[0], trans ? CblasTrans : CblasNoTrans));
+		h = h_.get();
+	}
+	catch (const std::exception& ex) {
+		XLL_ERROR(ex.what());
+	}
+
+	return h;
+}
+
+AddIn xai_blas_matrix(
+	Function(XLL_FPX, "xll_blas_matrix", "BLAS.MATRIX")
+	.Arguments({
+		Arg(XLL_HANDLEX, "handle", "is a handle to a matrix."),
+		})
+	.FunctionHelp("Return BLAS matrix.")
+	.Documentation(R"()")
+);
+_FPX* WINAPI xll_blas_matrix(HANDLEX h)
+{
+#pragma XLLEXPORT
+	_FPX* fpx = nullptr;
+
+	try {
+		handle<blas::matrix<double>> h_(h);
+		ensure(h_);
+		const auto& m_ = h_.as<fpmatrix>();
+
+		fpx = m_->alloc.fp.get();
 	}
 	catch (const std::exception& ex) {
 		XLL_ERROR(ex.what());
